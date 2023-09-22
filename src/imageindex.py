@@ -18,8 +18,8 @@ def findImageUrl(db, image_id: str) -> str | None:
     else:
         return None
 
-def setImageUrl(image_id: str, image_url: str):
-    doc = _getIndexDocById(image_id)
+def setImageUrl(db, image_id: str, image_url: str):
+    doc = _getIndexDocById(db, image_id)
     doc.set({"url": image_url})
 
 async def rebuildIndex(db, server: Server):

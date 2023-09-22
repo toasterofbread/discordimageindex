@@ -20,7 +20,7 @@ class MainServer(Server):
         self.ready = True
 
     async def onNewImageAdded(self, image_id: str, image_url: str):
-        imageindex.setImageUrl(image_id, image_url)
+        imageindex.setImageUrl(db, image_id, image_url)
 
 def isRemoteEnvironment():
     return os.getenv("REMOTE") == "1"
