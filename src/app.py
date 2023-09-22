@@ -18,7 +18,7 @@ def isRemoteEnvironment():
 
 def getKeysPath() -> str:
     if isRemoteEnvironment():
-        return "/ect/secrets/keys.properties"
+        return "/etc/secrets/keys.properties"
     else:
         return "keys.properties"
 
