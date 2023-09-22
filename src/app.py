@@ -83,6 +83,16 @@ def rebuild():
     asyncio.run_coroutine_threadsafe(startRebuild(), loop = server.loop)
     return "Index rebuild started"
 
+@app.route("/clear")
+def clear():
+    pw = os.getenv("pw", default = None)
+    if pw is not None and request.args.get("pw") != pw:
+        return abort(401, "pw incorrect or not provided")
+    
+    imageindex.clearIndex(db)
+
+    return "Index cleared"
+
 if __name__ == "__main__":
     flask_thread = threading.Thread(
         target = lambda: app.run(debug = False, host = "0.0.0.0", port = int(os.environ.get("PORT", 8081)))

@@ -56,3 +56,12 @@ async def rebuildIndex(db, server: Server):
     batch.commit()
 
     print("Done")
+
+def clearIndex(db):
+    batch = db.batch()
+    
+    for collection in db.collections():
+        for doc in collection.list_documents():
+            batch.delete(doc)
+
+    batch.commit()
