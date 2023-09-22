@@ -11,7 +11,10 @@ class MainServer(Server):
         super().__init__(bot_token, images_channel_category, images_channel_prefix)
 
     async def onReady(self):
-        await onServerReady(self)
+        await imageindex.rebuildIndex(server, only_if_missing = True)
+
+    async def onNewImageAdded(self, image_id: str, image_url: str):
+        imageindex.setImageUrl(image_id, image_url)
 
 def isRemoteEnvironment():
     return os.getenv("REMOTE") == "1"
@@ -40,9 +43,6 @@ def getServer() -> Server:
 
         return MainServer(bot_token, images_channel_category, images_channel_prefix)
 
-async def onServerReady(server: Server):
-    await imageindex.rebuildIndex(server, only_if_missing = True)
-
 app = Flask(__name__)
 
 @app.route("/")
@@ -66,7 +66,7 @@ def index():
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠁
 """.strip()
 
-@app.route("/getimage/<ids>")
+@app.route("/getimages/<ids>")
 def getImages(ids: str):
     ret = []
     for id in ids.split(","):

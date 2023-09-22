@@ -28,11 +28,24 @@ class Server(commands.Bot):
         async def onReady():
             print("Bot is ready!")
             await self.onReady()
+        
+        @event("on_message")
+        async def onMessage(message: discord.Message):
+            if message.author != self.user or len(message.attachments) == 0:
+                return
+            
+            if str(message.channel.category.id) != self.images_channel_category:
+                return
+            
+            await self.onNewImageAdded(message.content, message.attachments[0].url)
 
     def runServer(self):
         self.run(self.bot_token)
 
     async def onReady(self):
+        pass
+
+    async def onNewImageAdded(self, image_id: str, image_url: str):
         pass
 
     def fetchIndexChannels(self) -> dict[str, GuildChannel]:
