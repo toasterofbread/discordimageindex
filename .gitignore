@@ -1,3 +1,4 @@
 keys.properties
 index/
 **/__pycache__
+serviceAccountKey.json
