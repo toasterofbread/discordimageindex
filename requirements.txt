@@ -2,4 +2,3 @@ flask
 disnake
 yarl
 aiohttp
-firebase-admin

@@ -3,35 +3,30 @@ import os
 import imageindex
 from server import Server
 import os
-from flask import Flask, redirect, request, abort
+from flask import Flask, redirect
 import threading
-import firebase_admin
-from firebase_admin import firestore, credentials
-import asyncio
 
 class MainServer(Server):
     def __init__(self, bot_token: str, images_channel_category: str, images_channel_prefix: str):
         super().__init__(bot_token, images_channel_category, images_channel_prefix)
-        self.ready = False
 
     async def onReady(self):
-        print("READY")
-        self.loop = asyncio.get_event_loop()
-        self.ready = True
+        await imageindex.rebuildIndex(server, only_if_missing = True)
 
     async def onNewImageAdded(self, image_id: str, image_url: str):
-        imageindex.setImageUrl(db, image_id, image_url)
+        imageindex.setImageUrl(image_id, image_url)
 
 def isRemoteEnvironment():
     return os.getenv("REMOTE") == "1"
 
-def getDb():
-    cred = credentials.Certificate("serviceAccountKey.json")
-    firebase_admin.initialize_app(cred)
-    return firestore.client()
+def getKeysPath() -> str:
+    if isRemoteEnvironment():
+        return "/etc/secrets/keys.properties"
+    else:
+        return "keys.properties"
 
 def getServer() -> Server:
-    with open("keys.properties", "r") as f:
+    with open(getKeysPath(), "r") as f:
         bot_token = None
         images_channel_category = None
         images_channel_prefix = None
@@ -49,49 +44,17 @@ def getServer() -> Server:
         return MainServer(bot_token, images_channel_category, images_channel_prefix)
 
 app = Flask(__name__)
-server = getServer()
-db = getDb()
 
 @app.route("/")
 def index():
-    return "Hello!"
+    return redirect("https://github.com/toasterofbread/discordimageindex", code = 307)
 
 @app.route("/getimages/<ids>")
 def getImages(ids: str):
     ret = []
     for id in ids.split(","):
-        ret.append(imageindex.findImageUrl(db, id) or "")
+        ret.append(imageindex.findImageUrl(id) or "")
     return ",".join(ret)
-
-rebuild_lock = asyncio.Lock()
-async def startRebuild():
-    async with rebuild_lock:
-        await imageindex.rebuildIndex(db, server)
-
-@app.route("/rebuild")
-def rebuild():
-    pw = os.getenv("pw", default = None)
-    if pw is not None and request.args.get("pw") != pw:
-        return abort(401, "pw incorrect or not provided")
-    
-    if not server.ready:
-        return abort(503, "Server not ready")
-
-    if rebuild_lock.locked():
-        return "Already rebuilding", 202
-
-    asyncio.run_coroutine_threadsafe(startRebuild(), loop = server.loop)
-    return "Index rebuild started"
-
-@app.route("/clear")
-def clear():
-    pw = os.getenv("pw", default = None)
-    if pw is not None and request.args.get("pw") != pw:
-        return abort(401, "pw incorrect or not provided")
-    
-    imageindex.clearIndex(db)
-
-    return "Index cleared"
 
 if __name__ == "__main__":
     flask_thread = threading.Thread(
@@ -99,4 +62,5 @@ if __name__ == "__main__":
     )
     flask_thread.start()
 
+    server = getServer()
     server.runServer()
