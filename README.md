@@ -11,7 +11,7 @@ The Supabase URL and api key can be found here: https://github.com/toasterofbrea
 
 **To directly view the source code of the hosted function (get-images):**
 
-- Send a get request to "https://api.supabase.com/v1/projects/opdupqbpxdfaqgdffyun/functions/get-images/body" with the "Authorization" header set to "Bearer: <api key>"
+- Send a get request to `https://api.supabase.com/v1/projects/opdupqbpxdfaqgdffyun/functions/get-images/body` with the `Authorization` header set to `Bearer: <api key>`
 - Decode Brotli-encoded response
 
 As a curl command:
